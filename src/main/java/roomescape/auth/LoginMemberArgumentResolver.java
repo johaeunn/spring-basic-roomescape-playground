@@ -37,6 +37,6 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
 
         Member member = memberService.getMemberById(memberId);
 
-        return new LoginMember(member.getId(), member.getName(), member.getEmail(), member.getRole());
+        return new LoginMember(member.getId(), member.getName(), member.getEmail(), member.getRole().name());
     }
 }

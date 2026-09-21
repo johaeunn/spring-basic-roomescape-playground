@@ -6,6 +6,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 import roomescape.member.Member;
 import roomescape.member.MemberService;
+import roomescape.member.Role;
 
 @Component
 public class AdminInterceptor implements HandlerInterceptor {
@@ -27,7 +28,7 @@ public class AdminInterceptor implements HandlerInterceptor {
 
         Member member = memberService.getMemberById(memberId);
 
-        if (!member.getRole().equals("ADMIN")) {
+        if (member.getRole() != Role.ADMIN) {
             response.setStatus(401);
             return false;
         }
