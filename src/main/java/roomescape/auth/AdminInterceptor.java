@@ -27,7 +27,7 @@ public class AdminInterceptor implements HandlerInterceptor {
 
         Member member = memberService.getMemberById(memberId);
 
-        if (member == null || !member.getRole().equals("ADMIN")) {
+        if (!member.getRole().equals("ADMIN")) {
             response.setStatus(401);
             return false;
         }
