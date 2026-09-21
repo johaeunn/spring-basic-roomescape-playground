@@ -1,6 +1,5 @@
 package roomescape.auth;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.core.MethodParameter;
 import org.springframework.stereotype.Component;
@@ -15,10 +14,12 @@ import roomescape.member.MemberService;
 public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolver {
     private final MemberService memberService;
     private final TokenProvider tokenProvider;
+    private final TokenCookieExtractor tokenCookieExtractor;
 
-    public LoginMemberArgumentResolver(MemberService memberService, TokenProvider tokenProvider) {
+    public LoginMemberArgumentResolver(MemberService memberService, TokenProvider tokenProvider, TokenCookieExtractor tokenCookieExtractor) {
         this.memberService = memberService;
         this.tokenProvider = tokenProvider;
+        this.tokenCookieExtractor = tokenCookieExtractor;
     }
 
     @Override
@@ -30,26 +31,12 @@ public class LoginMemberArgumentResolver implements HandlerMethodArgumentResolve
     public Object resolveArgument(MethodParameter parameter, ModelAndViewContainer mavContainer, NativeWebRequest webRequest, WebDataBinderFactory binderFactory) throws Exception {
         HttpServletRequest request = webRequest.getNativeRequest(HttpServletRequest.class);
 
-        String token = extractToken(request.getCookies());
+        String token = tokenCookieExtractor.extractToken(request.getCookies());
 
         Long memberId = tokenProvider.extractMemberId(token);
 
         Member member = memberService.getMemberById(memberId);
 
         return new LoginMember(member.getId(), member.getName(), member.getEmail(), member.getRole());
-    }
-
-    private String extractToken(Cookie[] cookies) {
-        if (cookies == null) {
-            throw new RuntimeException("인증 정보가 존재하지 않습니다.");
-        }
-
-        for (Cookie cookie : cookies) {
-            if ("token".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-
-        throw new RuntimeException("토큰이 존재하지 않습니다.");
     }
 }

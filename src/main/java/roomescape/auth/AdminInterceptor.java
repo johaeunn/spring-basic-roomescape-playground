@@ -1,6 +1,5 @@
 package roomescape.auth;
 
-import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
@@ -12,15 +11,17 @@ import roomescape.member.MemberService;
 public class AdminInterceptor implements HandlerInterceptor {
     private final TokenProvider tokenProvider;
     private final MemberService memberService;
+    private final TokenCookieExtractor tokenCookieExtractor;
 
-    public AdminInterceptor(TokenProvider tokenProvider, MemberService memberService) {
+    public AdminInterceptor(TokenProvider tokenProvider, MemberService memberService, TokenCookieExtractor tokenCookieExtractor) {
         this.tokenProvider = tokenProvider;
         this.memberService = memberService;
+        this.tokenCookieExtractor = tokenCookieExtractor;
     }
 
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-        String token = extractToken(request.getCookies());
+        String token = tokenCookieExtractor.extractToken(request.getCookies());
 
         Long memberId = tokenProvider.extractMemberId(token);
 
@@ -32,19 +33,5 @@ public class AdminInterceptor implements HandlerInterceptor {
         }
 
         return true;
-    }
-
-    private String extractToken(Cookie[] cookies) {
-        if (cookies == null) {
-            throw new RuntimeException("인증 정보가 존재하지 않습니다.");
-        }
-
-        for (Cookie cookie : cookies) {
-            if ("token".equals(cookie.getName())) {
-                return cookie.getValue();
-            }
-        }
-
-        throw new RuntimeException("토큰이 존재하지 않습니다.");
     }
 }
