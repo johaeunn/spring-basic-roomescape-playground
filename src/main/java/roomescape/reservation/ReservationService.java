@@ -26,7 +26,14 @@ public class ReservationService {
             member = memberDao.findByName(reservationRequest.getName());
         }
 
-        Reservation reservation = reservationDao.save(reservationRequest, member.getName());
+        ReservationSaveCommand command = new ReservationSaveCommand(
+                reservationRequest.getDate(),
+                reservationRequest.getTheme(),
+                reservationRequest.getTime(),
+                member.getName()
+        );
+
+        Reservation reservation = reservationDao.save(command);
 
         return new ReservationResponse(reservation.getId(), member.getName(), reservation.getTheme().getName(), reservation.getDate(), reservation.getTime().getValue());
     }

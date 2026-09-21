@@ -43,29 +43,29 @@ public class ReservationDao {
                         )));
     }
 
-    public Reservation save(ReservationRequest reservationRequest, String memberName) {
+    public Reservation save(ReservationSaveCommand command) {
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update(connection -> {
             PreparedStatement ps = connection.prepareStatement("INSERT INTO reservation(date, name, theme_id, time_id) VALUES (?, ?, ?, ?)", new String[]{"id"});
-            ps.setString(1, reservationRequest.getDate());
-            ps.setString(2, memberName);
-            ps.setLong(3, reservationRequest.getTheme());
-            ps.setLong(4, reservationRequest.getTime());
+            ps.setString(1, command.date());
+            ps.setString(2, command.memberName());
+            ps.setLong(3, command.themeId());
+            ps.setLong(4, command.timeId());
             return ps;
         }, keyHolder);
 
         Time time = jdbcTemplate.queryForObject("SELECT * FROM time WHERE id = ?",
                 (rs, rowNum) -> new Time(rs.getLong("id"), rs.getString("time_value")),
-                reservationRequest.getTime());
+                command.timeId());
 
         Theme theme = jdbcTemplate.queryForObject("SELECT * FROM theme WHERE id = ?",
                 (rs, rowNum) -> new Theme(rs.getLong("id"), rs.getString("name"), rs.getString("description")),
-                reservationRequest.getTheme());
+                command.themeId());
 
         return new Reservation(
                 keyHolder.getKey().longValue(),
-                memberName,
-                reservationRequest.getDate(),
+                command.memberName(),
+                command.date(),
                 time,
                 theme
         );
